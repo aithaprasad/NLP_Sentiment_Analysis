@@ -54,7 +54,19 @@ def get_counts(data):
     counts = {}
 
     for line in data:
+        tripper = 0
+        iters = 0
         for word in line.split(" "):
+            if word.lower == "not":
+                tripper = 1
+
+            if tripper == 1:
+                if iters < 2:
+                    word = word + '*'
+                    iters += 1
+                else:
+                    tripper = 0
+
             if word in counts.keys():
                 counts.update({word: counts[word]+1})
             else:

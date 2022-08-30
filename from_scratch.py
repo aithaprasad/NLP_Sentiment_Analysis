@@ -15,11 +15,11 @@ def main():
 
 
     for min_count in min_counts:
-        print("Calculating priors for min count of ", min_count, "...", sep="")
+        print("\n\nCalculating priors for min count of ", min_count, "...", sep="")
         positive_priors, pos_count = utility.get_priors(positive, min_count)
-        negative_priors, neg_count = utility.get_priors((negative), min_count)
+        negative_priors, neg_count = utility.get_priors(negative, min_count)
 
-        print("Predicting...")
+        print("\nPredicting...")
         predict(test, [pos_offset, neg_offset], positive_priors, negative_priors)
 
 
