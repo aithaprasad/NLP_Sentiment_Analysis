@@ -29,16 +29,27 @@ def get_priors(data):
     counts = get_counts(data)
     priors = {}
 
+    clean_counts = clean_data(counts, 2)
+
     total_words = 0
 
     for key in counts.keys():
         total_words += counts[key]
 
-    for key in counts.keys():
-        priors[key] = math.log(counts[key]/total_words)
+    for key in clean_counts.keys():
+        priors[key] = math.log(clean_counts[key]/total_words)
 
     return priors, total_words
 
+
+def clean_data(data, min_count):
+    fake_data = data.copy()
+
+    for entry in fake_data.keys():
+        if data[entry] <= min_count:
+            del data[entry]
+
+    return data
 def get_counts(data):
     counts = {}
 
