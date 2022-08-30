@@ -25,11 +25,11 @@ def read_file(filename):
 
     return positive, negative, test
 
-def get_priors(data):
+def get_priors(data, min_count):
     counts = get_counts(data)
     priors = {}
 
-    clean_counts = clean_data(counts, 2)
+    clean_counts = clean_data(counts, min_count)
 
     total_words = 0
 

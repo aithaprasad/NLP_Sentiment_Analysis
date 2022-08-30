@@ -4,6 +4,8 @@ import math
 
 alphas = [0.28, 0.27, 0.26, 0.25, 0.24, 0.23, 0.22, 0.21, 0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12]
 
+min_counts = [0, 1, 2, 3, 4, 5]
+
 def main():
     print("Loading data...")
     positive, negative, test = utility.read_file("train.tsv")
@@ -12,12 +14,13 @@ def main():
     neg_offset = math.log(len(negative) / (len(positive) + len(negative)))
 
 
-    print("Calculating priors...")
-    positive_priors, pos_count = utility.get_priors(positive)
-    negative_priors, neg_count = utility.get_priors((negative))
+    for min_count in min_counts:
+        print("Calculating priors for min count of ", min_count, "...", sep="")
+        positive_priors, pos_count = utility.get_priors(positive, min_count)
+        negative_priors, neg_count = utility.get_priors((negative), min_count)
 
-    print("Predicting...")
-    predict(test, [pos_offset, neg_offset], positive_priors, negative_priors)
+        print("Predicting...")
+        predict(test, [pos_offset, neg_offset], positive_priors, negative_priors)
 
 
 def predict(test_data, offsets, positive_priors, negative_priors):
