@@ -35,7 +35,7 @@ def get_priors(data):
         total_words += counts[key]
 
     for key in counts.keys():
-        priors[key] = (counts[key]/total_words)
+        priors[key] = math.log(counts[key]/total_words)
 
     return priors, total_words
 

@@ -2,7 +2,7 @@ import utility
 import math
 
 
-alpha = 0.5
+alphas = [0.28, 0.27, 0.26, 0.25, 0.24, 0.23, 0.22, 0.21, 0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12]
 
 def main():
     print("Loading data...")
@@ -17,40 +17,40 @@ def main():
     negative_priors, neg_count = utility.get_priors((negative))
 
     print("Predicting...")
-    all_predicts = predict(test, [pos_offset, neg_offset], positive_priors, negative_priors)
-
-    print("Calculating Accuracy...")
-    accuracy(all_predicts)
+    predict(test, [pos_offset, neg_offset], positive_priors, negative_priors)
 
 
 def predict(test_data, offsets, positive_priors, negative_priors):
-    all_predicts = []
+    for alpha in alphas:
+        all_predicts = []
+        for text in test_data:
+            pos_sum = offsets[0]
+            neg_sum = offsets[1]
 
-    for text in test_data:
-        pos_sum = offsets[0]
-        neg_sum = offsets[1]
+            predict = -1
 
-        predict = -1
+            for word in text[1]:
+                if word in positive_priors.keys():
+                    pos_sum += positive_priors[word] + alpha
+                else:
+                    pos_sum += alpha
 
-        for word in text[1]:
-            if word in positive_priors.keys():
-                pos_sum += positive_priors[word] + alpha
+                if word in negative_priors.keys():
+                    neg_sum += negative_priors[word] + alpha
+                # else:
+                    # neg_sum += alpha
+
+            if neg_sum > pos_sum:
+                predict = 0
             else:
-                pos_sum += alpha
+                predict = 1
 
-            if word in negative_priors.keys():
-                neg_sum += negative_priors[word] + alpha
-            else:
-                neg_sum += alpha
+            all_predicts.append([str(predict), text[0]])
 
-        if neg_sum > pos_sum:
-            predict = 0
-        else:
-            predict = 1
+        print("Calculating accuracy for Alpha ", alpha, "...", sep="")
 
-        all_predicts.append([str(predict), text[0]])
+        accuracy(all_predicts)
 
-    return all_predicts
 
 def accuracy(all_predicts):
     total_right = 0
