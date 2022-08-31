@@ -10,23 +10,22 @@ max_iters = [0, 1, 2, 3, 4, 5]
 
 def main():
     print("Loading data...")
-    positive_priors, negative_priors, test, offsets = utility.read_file("train.tsv")
+    positive, negative, test, offsets = utility.read_file("train.tsv")
 
     pos_offset = math.log(offsets[0])
     neg_offset = math.log(offsets[1])
 
 
-    # for min_count in min_counts:
-    #     for max_iter in max_iters:
-    #
-    #         print("\n\nCalculating priors for min count of ", min_count, " and max iters of ", max_iter, "...", sep="")
-    #         positive_priors, pos_count = utility.get_priors(positive, min_count)
-    #         negative_priors, neg_count = utility.get_priors(negative, min_count)
+    for min_count in min_counts:
+        #for max_iter in max_iters:
 
-    print("\nPredicting...")
-    predict(test, [pos_offset, neg_offset], positive_priors, negative_priors)
+        print("\n\nCalculating priors for min count of ", min_count, "...", sep="")
+        positive_priors, negative_priors = utility.get_priors(positive, negative, min_count)
 
-    test_priors(positive_priors, negative_priors)
+        print("\nPredicting...")
+        predict(test, [pos_offset, neg_offset], positive_priors, negative_priors)
+
+        test_priors(positive_priors, negative_priors)
 
 
 def test_priors(pos, neg):
@@ -42,7 +41,7 @@ def test_priors(pos, neg):
                 #print("Pos: ", pos[key], "   Neg: ", neg[key], "       KEY: ", key, "     NEGATIVE")
                 total_neg += 1
 
-    print("Total Positive: ", total_pos, "        Total Negative: ", total_neg)
+    print("\n\nTotal Positive: ", total_pos, "        Total Negative: ", total_neg)
 
 def predict(test_data, offsets, positive_priors, negative_priors):
     for alpha in alphas:

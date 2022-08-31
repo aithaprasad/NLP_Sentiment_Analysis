@@ -23,14 +23,14 @@ def read_file(filename):
                 if line[0] == '0':
                     negative.append(line[1])
 
-    pos_prior, neg_prior = get_priors(positive, negative)
+
 
     offsets = [(len(positive) / (len(positive) + len(negative))), (len(negative) / (len(positive) + len(negative)))]
 
-    return pos_prior, neg_prior, test, offsets
+    return positive, negative, test, offsets
 
 
-def get_priors(positive, negative):
+def get_priors(positive, negative, min_count = 0):
     total_words = 0
     pos_count = {}
     neg_count = {}
@@ -53,13 +53,18 @@ def get_priors(positive, negative):
             else:
                 neg_count.update({word: neg_count[word]+1})
 
+    neg_priors = {}
+    pos_priors = {}
+
     for key in neg_count.keys():
-        neg_count[key] = math.log(neg_count[key] / total_words)
+        if neg_count[key] >= min_count:
+            neg_priors[key] = math.log(neg_count[key]/ total_words)
 
     for key in pos_count.keys():
-        pos_count[key] = math.log(pos_count[key] / total_words)
+        if pos_count[key] >= min_count:
+            pos_priors[key] = math.log(pos_count[key] / total_words)
 
-    return pos_count, neg_count
+    return pos_priors, neg_priors
 
 # def get_priors(data, min_count=0, max_iters=0):
 #     counts = get_counts(data, max_iters)
