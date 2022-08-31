@@ -2,11 +2,11 @@ import utility
 import math
 
 
-alphas = [0.28, 0.27, 0.26, 0.25, 0.24, 0.23, 0.22, 0.21, 0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12]
+alphas = [0.24, 0.23, 0.22, 0.21, 0.2, 0.19, 0.18, 0.17, 0.16]
 
 min_counts = [0, 1, 2, 3, 4, 5]
 
-max_iters = [0, 1, 2, 3, 4, 5]
+max_iters = 2
 
 def main():
     print("Loading data...")
@@ -20,7 +20,7 @@ def main():
         #for max_iter in max_iters:
 
         print("\n\nCalculating priors for min count of ", min_count, "...", sep="")
-        positive_priors, negative_priors = utility.get_priors(positive, negative, min_count)
+        positive_priors, negative_priors = utility.get_priors(positive, negative, min_count, max_iters)
 
         print("\nPredicting...")
         predict(test, [pos_offset, neg_offset], positive_priors, negative_priors)
@@ -54,7 +54,19 @@ def predict(test_data, offsets, positive_priors, negative_priors):
 
             predict = -1
 
+            tripper = 0
+            iter = 0
+
             for word in text[1]:
+                if word.lower == "not" or word.lower == "nodyn":
+                    tripper = 1
+
+                if tripper == 1:
+                    if iter <= max_iters:
+                        word = word + "*"
+                        iters += 1
+                    else:
+                        trigger = 0
                 if word in positive_priors.keys():
                     pos_sum += positive_priors[word] + math.log(alpha)
                 if word in negative_priors.keys():
@@ -133,7 +145,10 @@ def fscore(all_predicts):
     rec = recall(all_predicts)
     prec = precision(all_predicts)
 
-    f_score = ((2 * prec * rec)/(prec + rec))
+    if prec + rec != 0:
+        f_score = ((2 * prec * rec)/(prec + rec))
+    else:
+        f_score = 0
 
     return f_score
 

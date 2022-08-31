@@ -30,19 +30,13 @@ def read_file(filename):
     return positive, negative, test, offsets
 
 
-def get_priors(positive, negative, min_count = 0):
+def get_priors(positive, negative, min_count = 0, max_iters = 0):
     total_words = 0
     pos_count = {}
     neg_count = {}
 
-    for line in positive:
-        line = line.split(" ")
-        for word in line:
-            total_words += 1
-            if word not in pos_count.keys():
-                pos_count[word] = 1
-            else:
-                pos_count.update({word: pos_count[word]+1})
+    pos_count, total_words = get_counts(positive, max_iters)
+    neg_count, total_words = get_counts(negative, max_iters, total_words)
 
     for line in negative:
         line = line.split(" ")
@@ -52,6 +46,9 @@ def get_priors(positive, negative, min_count = 0):
                 neg_count[word] = 1
             else:
                 neg_count.update({word: neg_count[word]+1})
+
+    neg_count = clean_data(neg_count, min_count)
+    pos_count = clean_data(pos_count, min_count)
 
     neg_priors = {}
     pos_priors = {}
@@ -94,26 +91,28 @@ def clean_data(data, min_count):
     #     del data['@USER']
 
     return data
-def get_counts(data, max_iters):
+def get_counts(data, max_iters, total_count=0):
     counts = {}
 
     for line in data:
         tripper = 0
         iters = 0
         for word in line.split(" "):
-            # if word.lower == "not" or word.lower == "nodyn":
-            #     tripper = 1
-            #
-            # if tripper == 1:
-            #     if iters <= max_iters:
-            #         word = word + '*'
-            #         iters += 1
-            #     else:
-            #         tripper = 0
+            if word.lower == "not" or word.lower == "nodyn":
+                tripper = 1
+
+            total_count += 1
+
+            if tripper == 1:
+                if iters <= max_iters:
+                    word = word + '*'
+                    iters += 1
+                else:
+                    tripper = 0
 
             if word in counts.keys():
                 counts.update({word: counts[word]+1})
             else:
                 counts[word] = 1
 
-    return counts
+    return counts, total_count
