@@ -23,23 +23,59 @@ def read_file(filename):
                 if line[0] == '0':
                     negative.append(line[1])
 
-    return positive, negative, test
+    pos_prior, neg_prior = get_priors(positive, negative)
 
-def get_priors(data, min_count):
-    counts = get_counts(data)
-    priors = {}
+    offsets = [(len(positive) / (len(positive) + len(negative))), (len(negative) / (len(positive) + len(negative)))]
 
-    clean_counts = clean_data(counts, min_count)
+    return pos_prior, neg_prior, test, offsets
 
+
+def get_priors(positive, negative):
     total_words = 0
+    pos_count = {}
+    neg_count = {}
 
-    for key in counts.keys():
-        total_words += counts[key]
+    for line in positive:
+        line = line.split(" ")
+        for word in line:
+            total_words += 1
+            if word not in pos_count.keys():
+                pos_count[word] = 1
+            else:
+                pos_count.update({word: pos_count[word]+1})
 
-    for key in clean_counts.keys():
-        priors[key] = math.log(clean_counts[key]/total_words)
+    for line in negative:
+        line = line.split(" ")
+        for word in line:
+            total_words += 1
+            if word not in neg_count.keys():
+                neg_count[word] = 1
+            else:
+                neg_count.update({word: neg_count[word]+1})
 
-    return priors, total_words
+    for key in neg_count.keys():
+        neg_count[key] = math.log(neg_count[key] / total_words)
+
+    for key in pos_count.keys():
+        pos_count[key] = math.log(pos_count[key] / total_words)
+
+    return pos_count, neg_count
+
+# def get_priors(data, min_count=0, max_iters=0):
+#     counts = get_counts(data, max_iters)
+#     priors = {}
+#
+#     clean_counts = clean_data(counts, min_count)
+#
+#     total_words = 0
+#
+#     for key in counts.keys():
+#         total_words += counts[key]
+#
+#     for key in clean_counts.keys():
+#         priors[key] = math.log(clean_counts[key]/total_words)
+#
+#     return priors, total_words
 
 
 def clean_data(data, min_count):
@@ -49,23 +85,26 @@ def clean_data(data, min_count):
         if data[entry] <= min_count:
             del data[entry]
 
+    # if '@USER' in data.keys():
+    #     del data['@USER']
+
     return data
-def get_counts(data):
+def get_counts(data, max_iters):
     counts = {}
 
     for line in data:
         tripper = 0
         iters = 0
         for word in line.split(" "):
-            if word.lower == "not":
-                tripper = 1
-
-            if tripper == 1:
-                if iters < 2:
-                    word = word + '*'
-                    iters += 1
-                else:
-                    tripper = 0
+            # if word.lower == "not" or word.lower == "nodyn":
+            #     tripper = 1
+            #
+            # if tripper == 1:
+            #     if iters <= max_iters:
+            #         word = word + '*'
+            #         iters += 1
+            #     else:
+            #         tripper = 0
 
             if word in counts.keys():
                 counts.update({word: counts[word]+1})
