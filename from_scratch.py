@@ -3,11 +3,13 @@ import math
 
 
 # Global vars for hyperparameter tuning
-alphas = [0.3, 0.4, 0.5, 0.25, 0.28, 0.24, 0.23, 0.22, 0.21, 0.2, 0.19, 0.18, 0.17, 0.16, 0.01]
+alphas = [0.3, 0.2, 0.1]
 
-min_counts = [0, 1, 2, 3, 4, 5]
+min_counts = [0, 1, 2, 3, 4, 5, 6]
 
-max_iters = [0, 1, 2, 3, 4]
+max_iters = [0]
+
+lil_test = [['0', '@USER amseru gwych ar gyfer y Pasg']]
 
 
 # Runs majority of program
@@ -42,18 +44,22 @@ def main():
     positive, negative, test, offsets = utility.read_file("train.tsv")
 
     # Set offsets for easier access
-    pos_offset = math.log(offsets[0])
-    neg_offset = math.log(offsets[1])
+    pos_offset = -1 * math.log(offsets[0])
+    neg_offset = -1 * math.log(offsets[1])
+
+    # pos_priors, neg_priors = utility.get_priors(positive, negative)
+    #
+    # predict(lil_test, [pos_offset, neg_offset], pos_priors, neg_priors, 0.1)
 
     # Run for every min count in list
     for min_count in min_counts:
         # Run for every max_iter in list
         for max_iter in max_iters:
             # Tuning for alphas
+            print("\n\nCalculating priors for min count of ", min_count, " and max iterations of ", max_iter, "...",
+                  sep="")
             for alpha in alphas:
                 # Calculate priors
-                print("\n\nCalculating priors for min count of ", min_count, " and max iterations of ", max_iter, "...",
-                      sep="")
                 positive_priors, negative_priors = utility.get_priors(positive, negative, alpha, min_count, max_iter)
 
                 # Make predictions
@@ -80,8 +86,6 @@ def main():
                     max_f['min_count'] = min_count
                     max_f['max_iter'] = max_iter
                     max_f['alpha'] = alpha
-
-
 
 
     # Helper function
@@ -129,6 +133,7 @@ def predict(test_data, offsets, positive_priors, negative_priors, alpha, m_iter 
     all_predicts = []
     total_neg = 0
     total = 0
+    spec_chars = '!@#$%?.,\"\'~'
 
     # run for each test tweet
     for text in test_data:
@@ -141,19 +146,21 @@ def predict(test_data, offsets, positive_priors, negative_priors, alpha, m_iter 
         iter = 0
 
         # Split tweet into words
-        for word in text[1]:
-            # If word is not or welsh equivalent, start adding *
-            if word.lower == "not" or word.lower == "nodyn":
-                tripper = 1
+        for word in text[1].split(" "):
+            word = word.translate({ord(i): None for i in spec_chars})
 
-            # If should be adding stars, do so
-            if tripper == 1:
-                if iter <= m_iter:
-                    word = word + "*"
-                    iter += 1
-                # If over max iters stop adding *
-                else:
-                    trigger = 0
+            # # If word is not or welsh equivalent, start adding *
+            # if word.lower == "not" or word.lower == "nodyn":
+            #     tripper = 1
+            #
+            # # If should be adding stars, do so
+            # if tripper == 1:
+            #     if iter <= m_iter:
+            #         word = word + "*"
+            #         iter += 1
+            #     # If over max iters stop adding *
+            #     else:
+            #         trigger = 0
 
             # Calculate the probability of each class
             if word in positive_priors.keys():
@@ -162,9 +169,11 @@ def predict(test_data, offsets, positive_priors, negative_priors, alpha, m_iter 
                 neg_sum += negative_priors[word]
 
             # If word is in neither class, add alpha in place
-            if word not in positive_priors.keys() and word not in negative_priors.keys():
-                neg_sum += math.log(alpha)
-                pos_sum += math.log(alpha)
+            # if word not in positive_priors.keys() and word not in negative_priors.keys():
+            #     neg_sum += math.log(alpha)
+            #     pos_sum += math.log(alpha)
+
+        #print(neg_sum, "    |    ", pos_sum)
 
         # If neg_sum is greater, predict negative sentiment and vice versa
         if neg_sum > pos_sum:
@@ -172,6 +181,8 @@ def predict(test_data, offsets, positive_priors, negative_priors, alpha, m_iter 
             total_neg += 1
         if pos_sum > neg_sum:
             predict = 1
+
+        #print(predict,"***", text[0])
 
         # Append to predictions in form [PREDICTION, ACTUAL]
         total += 1

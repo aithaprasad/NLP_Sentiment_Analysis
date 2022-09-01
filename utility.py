@@ -35,7 +35,7 @@ def read_file(filename):
 
 
 # Calculate the priors and return
-def get_priors(positive, negative, alpha, min_count = 0, max_iters = 0):
+def get_priors(positive, negative, alpha = 0, min_count = 0, max_iters = 0):
     total_words = 0
     pos_count = {}
     neg_count = {}
@@ -56,12 +56,13 @@ def get_priors(positive, negative, alpha, min_count = 0, max_iters = 0):
     # Calculate priors by dividing occurences of word in class divided  by all unique words, adding alpha to numerator and denominator then logged
     for key in neg_count.keys():
         if neg_count[key] >= min_count:
-            neg_priors[key] = math.log(neg_count[key] / (total_words + total_neg))#math.log((neg_count[key] + alpha) / (total_words + alpha))
+            neg_priors[key] = -1 * math.log((neg_count[key] + alpha) / ((total_words * alpha) + total_neg))#math.log((neg_count[key]) / (total_neg))
 
     # Same as above for other class
     for key in pos_count.keys():
         if pos_count[key] >= min_count:
-            pos_priors[key] = math.log(pos_count[key] / (total_words + total_pos))#math.log((pos_count[key] + alpha) / (total_words + alpha))
+            pos_priors[key] = -1 * math.log((pos_count[key] + alpha) / ((total_words * alpha) + total_pos))#math.log((pos_count[key]) / (total_pos))
+
 
     return pos_priors, neg_priors
 
@@ -111,23 +112,22 @@ def get_counts(data, max_iters):
         for word in line.split(" "):
             word = word.translate({ord(i): None for i in spec_chars})
 
-
-            if word in already_inline:
-                continue
-            # If the word is not or the welsh equivalent, start adding * to following words
-            if word.lower == "not" or word.lower == "nodyn":
-                tripper = 1
-
-            # If previous word was not, add * if not above max iters
-            if tripper == 1:
-                if iters <= max_iters:
-                    word = word + '*'
-                    iters += 1
-                # If above max iters, stop adding *
-                else:
-                    tripper = 0
-
             total_count += 1
+
+            # if word in already_inline:
+            #     continue
+            # # If the word is not or the welsh equivalent, start adding * to following words
+            # if word.lower == "not" or word.lower == "nodyn":
+            #     tripper = 1
+            #
+            # # If previous word was not, add * if not above max iters
+            # if tripper == 1:
+            #     if iters <= max_iters:
+            #         word = word + '*'
+            #         iters += 1
+            #     # If above max iters, stop adding *
+            #     else:
+            #         tripper = 0
 
             # Update word in dict
             if word in counts.keys():
@@ -135,7 +135,7 @@ def get_counts(data, max_iters):
             else:
                 counts[word] = 1
 
-            already_inline.append(word)
+            # already_inline.append(word)
 
     return counts, total_count
 
