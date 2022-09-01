@@ -58,7 +58,7 @@ def main():
             for alpha in alphas:
             # Make predictions
                 print("\nPredicting...")
-                scores = predict(test, [pos_offset, neg_offset], positive_priors, negative_priors, alpha)
+                scores = predict(test, [pos_offset, neg_offset], positive_priors, negative_priors, alpha, max_iter)
 
                 if scores[0] > max_acc['score']:
                     max_acc['score'] = scores[0]
@@ -124,7 +124,7 @@ def test_priors(pos, neg):
 
 
 # Make predictions based on priors
-def predict(test_data, offsets, positive_priors, negative_priors, alpha):
+def predict(test_data, offsets, positive_priors, negative_priors, alpha, m_iter = 0):
 
     all_predicts = []
     total_neg = 0
@@ -148,9 +148,9 @@ def predict(test_data, offsets, positive_priors, negative_priors, alpha):
 
             # If should be adding stars, do so
             if tripper == 1:
-                if iter <= max_iters:
+                if iter <= m_iter:
                     word = word + "*"
-                    iters += 1
+                    iter += 1
                 # If over max iters stop adding *
                 else:
                     trigger = 0
