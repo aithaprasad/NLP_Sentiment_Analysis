@@ -3,7 +3,7 @@ import math
 
 
 # Global vars for hyperparameter tuning
-alphas = [0.3, 0.4, 0.5, 0.25, 0.28, 0.24, 0.23, 0.22, 0.21, 0.2, 0.19, 0.18, 0.17, 0.16, 0.0]
+alphas = [0.3, 0.4, 0.5, 0.25, 0.28, 0.24, 0.23, 0.22, 0.21, 0.2, 0.19, 0.18, 0.17, 0.16, 0.01]
 
 min_counts = [0, 1, 2, 3, 4, 5]
 
@@ -49,14 +49,14 @@ def main():
     for min_count in min_counts:
         # Run for every max_iter in list
         for max_iter in max_iters:
-
-            # Calculate priors
-            print("\n\nCalculating priors for min count of ", min_count, " and max iterations of ", max_iter, "...", sep="")
-            positive_priors, negative_priors = utility.get_priors(positive, negative, min_count, max_iters)
-
             # Tuning for alphas
             for alpha in alphas:
-            # Make predictions
+                # Calculate priors
+                print("\n\nCalculating priors for min count of ", min_count, " and max iterations of ", max_iter, "...",
+                      sep="")
+                positive_priors, negative_priors = utility.get_priors(positive, negative, alpha, min_count, max_iter)
+
+                # Make predictions
                 print("\nPredicting...")
                 scores = predict(test, [pos_offset, neg_offset], positive_priors, negative_priors, alpha, max_iter)
 
@@ -157,14 +157,14 @@ def predict(test_data, offsets, positive_priors, negative_priors, alpha, m_iter 
 
             # Calculate the probability of each class
             if word in positive_priors.keys():
-                pos_sum += positive_priors[word] - alpha
+                pos_sum += positive_priors[word]
             if word in negative_priors.keys():
-                neg_sum += negative_priors[word] - alpha
+                neg_sum += negative_priors[word]
 
             # If word is in neither class, add alpha in place
             if word not in positive_priors.keys() and word not in negative_priors.keys():
-                neg_sum -= alpha
-                pos_sum -= alpha
+                neg_sum += math.log(alpha)
+                pos_sum += math.log(alpha)
 
         # If neg_sum is greater, predict negative sentiment and vice versa
         if neg_sum > pos_sum:
