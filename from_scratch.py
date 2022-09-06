@@ -3,7 +3,7 @@ import math
 
 
 # Global vars for hyperparameter tuning
-alphas = [0.3, 0.2, 0.1]
+alphas = [1] #[5, 4, 3, 2, 1, 0.9, 0.3, 0.2, 0.1]
 
 min_counts = [0, 1, 2, 3, 4, 5, 6]
 
@@ -60,11 +60,11 @@ def main():
                   sep="")
             for alpha in alphas:
                 # Calculate priors
-                positive_priors, negative_priors = utility.get_priors(positive, negative, alpha, min_count, max_iter)
+                positive_priors, negative_priors = utility.get_priors(positive, negative, alpha, min_count)
 
                 # Make predictions
                 print("\nPredicting...")
-                scores = predict(test, [pos_offset, neg_offset], positive_priors, negative_priors, alpha, max_iter)
+                scores = predict(test, [pos_offset, neg_offset], positive_priors, negative_priors, alpha)
 
                 if scores[0] > max_acc['score']:
                     max_acc['score'] = scores[0]
@@ -128,12 +128,12 @@ def test_priors(pos, neg):
 
 
 # Make predictions based on priors
-def predict(test_data, offsets, positive_priors, negative_priors, alpha, m_iter = 0):
+def predict(test_data, offsets, positive_priors, negative_priors, alpha):
 
     all_predicts = []
     total_neg = 0
     total = 0
-    spec_chars = '!@#$%?.,\"\'~'
+    spec_chars = '!@#$%?.,\"\'`~;:{}[]()-'
 
     # run for each test tweet
     for text in test_data:
@@ -149,29 +149,13 @@ def predict(test_data, offsets, positive_priors, negative_priors, alpha, m_iter 
         for word in text[1].split(" "):
             word = word.translate({ord(i): None for i in spec_chars})
 
-            # # If word is not or welsh equivalent, start adding *
-            # if word.lower == "not" or word.lower == "nodyn":
-            #     tripper = 1
-            #
-            # # If should be adding stars, do so
-            # if tripper == 1:
-            #     if iter <= m_iter:
-            #         word = word + "*"
-            #         iter += 1
-            #     # If over max iters stop adding *
-            #     else:
-            #         trigger = 0
+            word = word.lower()
 
             # Calculate the probability of each class
             if word in positive_priors.keys():
                 pos_sum += positive_priors[word]
             if word in negative_priors.keys():
                 neg_sum += negative_priors[word]
-
-            # If word is in neither class, add alpha in place
-            # if word not in positive_priors.keys() and word not in negative_priors.keys():
-            #     neg_sum += math.log(alpha)
-            #     pos_sum += math.log(alpha)
 
         #print(neg_sum, "    |    ", pos_sum)
 

@@ -4,7 +4,6 @@
 
 import csv
 import math
-from sklearn.model_selection import train_test_split
 
 def read_file(filename):
     positive = []
@@ -20,7 +19,7 @@ def read_file(filename):
                 all_data.append(line)
 
         # Splitting data into train and test before anything else
-        train, test = train_test_split(all_data, test_size=0.2)
+        train, test = train_test_split(all_data)
 
         # Dividing positive and negative sentiments
         for line in train:
@@ -35,6 +34,14 @@ def read_file(filename):
 
     return positive, negative, test, offsets
 
+
+def train_test_split(data, percent = 0.2):
+    percent = int(percent * 10)
+
+    train = data[((len(data) // 10) * percent):]
+    test = data[:((len(data) // 10) * percent)]
+
+    return train, test
 
 def clean_data(data):
     chars_to_remove = '!@#$%^&*()-_`~=+;:,./<>?\'\"\\|'
@@ -293,10 +300,10 @@ def main():
                     max_f['ngram'] = ngram
 
     print("\n\nMAXIMUM SCORES AND PARAMETERS\n")
-    print("ACCURACY: ", max_acc['score'], " MIN COUNT: ", max_acc['min_count'], ' Alpha: ', max_acc['alpha'])
-    print("PRECISION: ", max_pre['score'], " MIN COUNT: ", max_pre['min_count'], ' Alpha: ', max_pre['alpha'])
-    print("RECALL: ", max_rec['score'], " MIN COUNT: ", max_rec['min_count'], ' Alpha: ', max_rec['alpha'])
-    print("F SCORE: ", max_f['score'], " MIN COUNT: ", max_f['min_count'], ' Alpha: ', max_f['alpha'])
+    print("ACCURACY: ", max_acc['score'], " MIN COUNT: ", max_acc['min_count'], ' Alpha: ', max_acc['alpha'], ' NGrams: ', max_acc['ngram'])
+    print("PRECISION: ", max_pre['score'], " MIN COUNT: ", max_pre['min_count'], ' Alpha: ', max_pre['alpha'], ' NGrams: ', max_pre['ngram'])
+    print("RECALL: ", max_rec['score'], " MIN COUNT: ", max_rec['min_count'], ' Alpha: ', max_rec['alpha'], ' NGrams: ', max_rec['ngram'])
+    print("F SCORE: ", max_f['score'], " MIN COUNT: ", max_f['min_count'], ' Alpha: ', max_f['alpha'], ' NGrams: ', max_f['ngram'])
 
 
 if __name__ == '__main__':
