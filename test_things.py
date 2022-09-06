@@ -49,8 +49,7 @@ def clean_data(data):
 
     for line in data:
         line = ''.join([char for char in line if char not in chars_to_remove])
-        line.lower()
-        clean_data.append((line))
+        clean_data.append(line.lower())
 
     return clean_data
 
@@ -106,6 +105,7 @@ def predict(test_data, priors, offsets, n):
     sentiments, data = split_data(test_data)
 
     data = clean_data(data)
+    data = not_hack(data)
 
     all_predicts = []
 
@@ -220,9 +220,33 @@ def ngrams_gen(data, n):
             cur_grams = [line[i:i+n] for i in range(len(line)-n+1)]
 
             for gram in cur_grams:
-                ngrams.append(''.join(gram))
+                ngrams.append(' '.join(gram))
 
     return ngrams
+
+
+def not_hack(data):
+    new_data = []
+
+    for line in data:
+        line = line.split(" ")
+        tripper = 0
+        cur_line = []
+
+        for word in line:
+            if word == 'not' or word == 'nodyn':
+                tripper = 1
+                continue
+
+            if tripper == 1:
+                word = "NOT" + word
+
+            cur_line.append(word)
+
+        new_data.append(' '.join(cur_line))
+
+    return new_data
+
 
 def main():
     max_acc = {
@@ -250,7 +274,7 @@ def main():
         'ngram': 0
     }
 
-    alphas = [0.5, 0.4, 0.3, 0.2, 0.1, 0.09, 0.08, 0.07, 0.06, 0.05]
+    alphas = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.09, 0.08, 0.07, 0.06, 0.05]
     min_counts = [0, 1, 2, 3, 4, 5]
     ngrams = [1, 2, 3, 4]
 
@@ -258,6 +282,9 @@ def main():
 
     pos = clean_data(pos)
     neg = clean_data(neg)
+
+    pos = not_hack(pos)
+    neg = not_hack(neg)
 
     for ngram in ngrams:
         print("Ngrams of size: ", ngram, "...", sep="")
