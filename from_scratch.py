@@ -35,6 +35,23 @@ def read_file(filename):
     return positive, negative, test, offsets
 
 
+def load_test_file():
+    positive = []
+    negative = []
+
+    # Loading data from file
+    with open("test.tsv", encoding="utf-8") as file:
+        f = csv.reader(file, delimiter="\t")
+        all_data = []
+
+        for line in f:
+            if len(line) >= 2:
+                all_data.append(line)
+
+
+    return all_data
+
+
 def train_test_split(data, percent = 0.2):
     percent = int(percent * 10)
 
@@ -251,7 +268,7 @@ def not_hack(data):
     return new_data
 
 
-def run_from_scratch(hyper_tune = False):
+def run_from_scratch(hyper_tune = False, with_test = False):
     max_acc = {
         'score': 0,
         'min_count': 0,
@@ -288,6 +305,9 @@ def run_from_scratch(hyper_tune = False):
     ngrams = [1, 2, 3, 4]
 
     pos, neg, test, offsets = read_file('train.tsv')
+
+    if with_test is True:
+        test = load_test_file()
 
     pos = clean_data(pos)
     neg = clean_data(neg)
