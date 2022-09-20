@@ -15,7 +15,7 @@ from keras.models import load_model
 
 def run_anything_goes():
     data = pd.read_csv('train.tsv', delimiter="\t", header=None, names=['label', 'sentence'])
-    test_data = pd.read_csv('train.tsv', delimiter="\t", header=None, names=['label', 'sentence'])
+    test_data = pd.read_csv('test.tsv', delimiter="\t", header=None, names=['label', 'sentence'])
     data.head()  # just making sure data got read and labelled correctly
 
     X, y = data['sentence'], data['label']
